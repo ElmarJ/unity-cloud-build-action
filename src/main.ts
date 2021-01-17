@@ -12,9 +12,13 @@ async function run(): Promise<void> {
     const useactioncommit = core.getInput('useactioncommit')
 
     const api = new BuildApi(apiKey, orgid, projectid)
+ 
+    core.info(`Starting cloud build now...`)
+ 
     const buildResult = await api.runBuild(buildtargetid)
 
-    core.debug(`Build finished`)
+    core.info(`Build finished!`)
+    
     if (buildResult.buildStatus !== 'success') {
       core.setFailed(
         `Build failed with status ${buildResult.buildStatus}. Info: ${JSON.stringify(buildResult)}`
