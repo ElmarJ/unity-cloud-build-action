@@ -15,7 +15,6 @@ async function run(): Promise<void> {
     const startBuildData = {
       clean: false,
       delay: 0,
-      commit: github.context.sha,
       headless: false,
       label: '',
       platform: 'standalonelinux'
