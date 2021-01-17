@@ -5,6 +5,7 @@
   "description": "TypeScript template action",
   "main": "lib/main.js",
   "scripts": {
+    "api-generate": "openapi-generator-cli generate -g javascript -i https://build-api.cloud.unity3d.com/api/v1/api.json -o src/api_library --additional-properties=ensureUniqueParams=true&npmName=unity-cloud-build-ts-api",
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
@@ -26,6 +27,8 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0",
+    "axios": "^0.21.1",
     "request": "^2.88.2"
   },
   "devDependencies": {
