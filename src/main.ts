@@ -18,7 +18,7 @@ async function run(): Promise<void> {
       commit: github.context.sha,
       headless: false,
       label: '',
-      platform: 'linux'
+      platform: 'standalonelinux'
     }
     const requestOptions = {
       headers: {
@@ -48,9 +48,7 @@ async function run(): Promise<void> {
   } catch (error) {
     if (error.response) {
       core.setFailed(
-        `Error HTTP response. Data: ${JSON.stringify(
-          error.response.data
-        )}. Status: ${error.response.status}`
+        `Error HTTP response. Error: ${error.response.data.error}. Status: ${error.response.status}`
       )
     } else if (error.request) {
       core.setFailed(`Error HTTP request: ${error.request}.`)

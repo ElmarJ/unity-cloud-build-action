@@ -55,7 +55,7 @@ function run() {
                 commit: github.context.sha,
                 headless: false,
                 label: '',
-                platform: 'linux'
+                platform: 'standalonelinux'
             };
             const requestOptions = {
                 headers: {
@@ -74,7 +74,7 @@ function run() {
         }
         catch (error) {
             if (error.response) {
-                core.setFailed(`Error HTTP response. Data: ${JSON.stringify(error.response.data)}. Status: ${error.response.status}`);
+                core.setFailed(`Error HTTP response. Error: ${error.response.data.error}. Status: ${error.response.status}`);
             }
             else if (error.request) {
                 core.setFailed(`Error HTTP request: ${error.request}.`);
