@@ -65,6 +65,7 @@ function run() {
             core.info('start');
             core.info(new Date().toTimeString());
             const response = yield axios.default.post(apiUrl + startBuildEndpoint, startBuildData, requestOptions);
+            core.info(JSON.stringify(response.data));
             const buildResult = response.data[0];
             core.debug(`Build finished in ${buildResult.buildTimeInSeconds} seconds.`);
             if (buildResult.buildStatus !== 'success') {

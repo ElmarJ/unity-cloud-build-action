@@ -34,7 +34,8 @@ async function run(): Promise<void> {
       startBuildData,
       requestOptions
     )
-
+    core.info(JSON.stringify(response.data));
+    
     const buildResult = response.data[0]
 
     core.debug(`Build finished in ${buildResult.buildTimeInSeconds} seconds.`)
