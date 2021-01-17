@@ -7,15 +7,6 @@ require('./sourcemap-register.js');module.exports =
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -34,56 +25,54 @@ class BuildApi {
             }
         };
     }
-    runBuild(buildtargetid, localcommit = false) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // Start build and register build number:
-            let buildResult = yield this.startBuild(buildtargetid, localcommit);
-            const buildNumber = buildResult.build;
-            // Keep checking build status every 15 seconds until done or failed
-            while (true) {
-                let buildStatus = buildResult.buildStatus;
-                if (buildStatus === 'queued' || buildStatus === 'sentToBuilder' || buildStatus === 'started' || buildStatus === 'restarted') {
-                    var sleepDuration = 15;
-                    yield this.sleepFor(sleepDuration);
-                    buildResult = yield this.getBuildInfo(buildtargetid, buildNumber);
-                }
-                else {
-                    break;
-                }
+    async runBuild(buildtargetid, localcommit = false) {
+        // Start build and register build number:
+        let buildResult = await this.startBuild(buildtargetid, localcommit);
+        const buildNumber = buildResult.build;
+        // Keep checking build status every 15 seconds until done or failed
+        while (true) {
+            let buildStatus = buildResult.buildStatus;
+            if (buildStatus === 'queued' || buildStatus === 'sentToBuilder' || buildStatus === 'started' || buildStatus === 'restarted') {
+                var sleepDuration = 15;
+                await this.sleepFor(sleepDuration);
+                buildResult = await this.getBuildInfo(buildtargetid, buildNumber);
             }
-            return buildResult;
+            else {
+                break;
+            }
+        }
+        return buildResult;
+    }
+    async sleepFor(sleepDurationInSeconds) {
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, sleepDurationInSeconds * 1000);
         });
     }
-    sleepFor(sleepDurationInSeconds) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                setTimeout(resolve, sleepDurationInSeconds * 1000);
-            });
-        });
+    async startBuild(buildtargetid, localcommit) {
+        const startBuildEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds`;
+        const startResponse = await this.apiPost(startBuildEndpoint, { commit: localcommit ? github_1.default.context.sha : undefined });
+        return startResponse.data[0];
     }
-    startBuild(buildtargetid, localcommit) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const startBuildEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds`;
-            const startResponse = yield this.apiPost(startBuildEndpoint, { commit: localcommit ? github_1.default.context.sha : undefined });
-            return startResponse.data[0];
-        });
+    async getBuildInfo(buildtargetid, buildnumber) {
+        const buildInfoEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}`;
+        const buildStatusResponse = await this.apiGet(buildInfoEndpoint);
+        return buildStatusResponse.data;
     }
-    getBuildInfo(buildtargetid, buildnumber) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const buildInfoEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}`;
-            const buildStatusResponse = yield this.apiGet(buildInfoEndpoint);
-            return buildStatusResponse.data;
-        });
+    async createShareLink(buildtargetid, buildnumber) {
+        const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`;
+        const shareResponse = await this.apiPost(shareEndpoint, {});
+        return shareResponse.data;
     }
-    apiGet(endpoint) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield axios_1.default.get(this.apiUrl + endpoint, this.requestOptions);
-        });
+    async getShareLink(buildtargetid, buildnumber) {
+        const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`;
+        const shareResponse = await this.apiGet(shareEndpoint);
+        return shareResponse.data;
     }
-    apiPost(endpoint, body) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield axios_1.default.post(this.apiUrl + endpoint, body, this.requestOptions);
-        });
+    async apiGet(endpoint) {
+        return await axios_1.default.get(this.apiUrl + endpoint, this.requestOptions);
+    }
+    async apiPost(endpoint, body) {
+        return await axios_1.default.post(this.apiUrl + endpoint, body, this.requestOptions);
     }
 }
 exports.default = BuildApi;
@@ -115,52 +104,46 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const buildApi_1 = __importDefault(__nccwpck_require__(138));
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const orgid = core.getInput('orgid');
-            const projectid = core.getInput('projectid');
-            const buildtargetid = core.getInput('buildtargetid');
-            const apiKey = core.getInput('apikey');
-            const useactioncommit = core.getInput('useactioncommit');
-            const api = new buildApi_1.default(apiKey, orgid, projectid);
-            core.info(`Starting cloud build now...`);
-            const buildResult = yield api.runBuild(buildtargetid);
-            core.info(`Build finished!`);
-            if (buildResult.buildStatus !== 'success') {
-                core.setFailed(`Build failed with status ${buildResult.buildStatus}. Info: ${JSON.stringify(buildResult)}`);
-            }
-            else {
-                core.info(`Build succeeded in ${buildResult.totalTimeInSeconds} seconds.`);
-            }
+async function run() {
+    try {
+        const orgid = core.getInput('orgid');
+        const projectid = core.getInput('projectid');
+        const buildtargetid = core.getInput('buildtargetid');
+        const apiKey = core.getInput('apikey');
+        const useactioncommit = core.getInput('useactioncommit');
+        const api = new buildApi_1.default(apiKey, orgid, projectid);
+        core.info(`Starting cloud build now...`);
+        const buildResult = await api.runBuild(buildtargetid);
+        core.info(`Build finished!`);
+        core.setOutput('BuildResult', buildResult);
+        core.info('Getting share link');
+        const shareResult = await api.createShareLink(buildtargetid, buildResult.build);
+        core.info(`Share link: ${shareResult.shareid}`);
+        core.setOutput('share-link', shareResult.shareid);
+        if (buildResult.buildStatus !== 'success') {
+            core.setFailed(`Build failed with status ${buildResult.buildStatus}. Info: ${JSON.stringify(buildResult)}`);
         }
-        catch (error) {
-            if (error.response) {
-                core.setFailed(`Error HTTP response. Error: ${error.response.data.error}. Status: ${error.response.status}`);
-            }
-            else if (error.request) {
-                core.setFailed(`Error HTTP request: ${error.request}.`);
-            }
-            else {
-                core.setFailed(error.message);
-            }
+        else {
+            core.info(`Build succeeded in ${buildResult.totalTimeInSeconds} seconds.`);
         }
-    });
+    }
+    catch (error) {
+        if (error.response) {
+            core.setFailed(`Error HTTP response. Error: ${error.response.data.error}. Status: ${error.response.status}`);
+        }
+        else if (error.request) {
+            core.setFailed(`Error HTTP request: ${error.request}.`);
+        }
+        else {
+            core.setFailed(error.message);
+        }
+    }
 }
 run();
 
