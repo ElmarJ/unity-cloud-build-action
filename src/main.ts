@@ -8,23 +8,23 @@ async function run(): Promise<void> {
     const projectid: string = core.getInput('projectid')
     const buildtargetid: string = core.getInput('buildtargetid')
     const apiKey = core.getInput('apikey')
+    const useactioncommit = core.getInput('useactioncommit')
     const apiUrl = 'https://build-api.cloud.unity3d.com/api/v1'
 
     const startBuildEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`
     core.info(`Using ${apiUrl + startBuildEndpoint}`)
-    const startBuildData = {
-      clean: false,
-      delay: 0,
-      headless: false,
-      label: '',
-      platform: 'standalonelinux'
+    const startBuildData: any = {
     }
+
     const requestOptions = {
       headers: {
         'Authorization': `Basic ${apiKey}`
       }
     }
 
+    if (useactioncommit) {
+      startBuildData.commit = github.context.sha;
+    }
     core.info('start')
     core.info(new Date().toTimeString())
 

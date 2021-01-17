@@ -14,6 +14,9 @@ inputs:
   apikey:
     required: true
     description: 'Unity Cloud Build API key'
+  useactioncommit:
+    required: false
+    description: set to true to not use default commit, but the one linked to this action
 runs:
   using: 'node12'
   main: 'dist/index.js'
