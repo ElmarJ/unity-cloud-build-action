@@ -7,7 +7,7 @@ async function run(): Promise<void> {
     const orgid: string = core.getInput('orgid')
     const projectid: string = core.getInput('projectid')
     const buildtargetid: string = core.getInput('buildtargetid')
-    const apiKey = core.getInput('apiKey')
+    const apiKey = core.getInput('apikey')
     const apiUrl = 'https://build-api.cloud.unity3d.com/api/v1'
 
     const startBuildEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`
