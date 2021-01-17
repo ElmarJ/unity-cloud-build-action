@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as axios from 'axios'
+import BuildApi from './buildApi'
 
 async function run(): Promise<void> {
   try {
@@ -9,58 +10,18 @@ async function run(): Promise<void> {
     const buildtargetid: string = core.getInput('buildtargetid')
     const apiKey = core.getInput('apikey')
     const useactioncommit = core.getInput('useactioncommit')
-    const apiUrl = 'https://build-api.cloud.unity3d.com/api/v1'
 
-    const startBuildEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`
-    core.info(`Using ${apiUrl + startBuildEndpoint}`)
-    const startBuildData: any = {
-    }
+    const api = new BuildApi(apiKey, orgid, projectid)
+    const buildResult = await api.runBuild(buildtargetid)
 
-    const requestOptions = {
-      headers: {
-        'Authorization': `Basic ${apiKey}`
-      }
-    }
-
-    if (useactioncommit) {
-      startBuildData.commit = github.context.sha;
-    }
-    core.info('start')
-    core.info(new Date().toTimeString())
-
-    const response = await axios.default.post(
-      apiUrl + startBuildEndpoint,
-      startBuildData,
-      requestOptions
-    )
-    core.info(JSON.stringify(response.data));
-    
-    const buildResult = response.data[0]
-    let buildStatus = buildResult.buildStatus
-    const buildNumber = buildResult.build
-    const buildInfoEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds/${buildNumber}`
-
-
-    while (true) {
-    if (buildStatus === 'queued' || buildStatus === 'sentToBuilder' || buildStatus === 'started' || buildStatus === 'restarted') {
-      var sleepDuration = 15;
-      await sleepFor(sleepDuration);
-
-      const buildStatusResponse = await axios.default.get(apiUrl + buildInfoEndpoint, requestOptions)
-      buildStatus = buildStatusResponse.data.buildStatus
-    } else {
-      break;
-    } 
-  }
-
-    core.debug(`Build finished in ${buildResult.buildTimeInSeconds} seconds.`)
+    core.debug(`Build finished`)
     if (buildResult.buildStatus !== 'success') {
       core.setFailed(
-        `Build failed with status ${buildResult.buildStatus}. Message: ${buildResult.failureDetails}`
+        `Build failed with status ${buildResult.buildStatus}. Info: ${JSON.stringify(buildResult)}`
       )
+    } else {
+      core.info(`Build succeeded in ${buildResult.totalTimeInSeconds} seconds.`)
     }
-
-    core.setOutput('time', new Date().toTimeString())
   } catch (error) {
     if (error.response) {
       core.setFailed(
@@ -72,11 +33,6 @@ async function run(): Promise<void> {
       core.setFailed(error.message)
     }
   }
-}
-async function sleepFor(sleepDurationInSeconds: any): Promise<any> {
-  return new Promise((resolve, reject) => {
-      setTimeout(resolve, sleepDurationInSeconds * 1000);
-  });
 }
 
 run()

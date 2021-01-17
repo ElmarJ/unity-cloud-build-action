@@ -2,6 +2,95 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 138:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const axios_1 = __importDefault(__nccwpck_require__(6545));
+const github_1 = __importDefault(__nccwpck_require__(5438));
+class BuildApi {
+    constructor(apiKey, orgid, projectid) {
+        this.apiKey = apiKey;
+        this.orgid = orgid;
+        this.projectid = projectid;
+        this.apiUrl = 'https://build-api.cloud.unity3d.com/api/v1';
+        this.requestOptions = {
+            headers: {
+                'Authorization': `Basic ${this.apiKey}`
+            }
+        };
+    }
+    runBuild(buildtargetid, localcommit = false) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Start build and register build number:
+            let buildResult = yield this.startBuild(buildtargetid, localcommit);
+            const buildNumber = buildResult.build;
+            // Keep checking build status every 15 seconds until done or failed
+            while (true) {
+                let buildStatus = buildResult.buildStatus;
+                if (buildStatus === 'queued' || buildStatus === 'sentToBuilder' || buildStatus === 'started' || buildStatus === 'restarted') {
+                    var sleepDuration = 15;
+                    yield this.sleepFor(sleepDuration);
+                    buildResult = yield this.getBuildInfo(buildtargetid, buildNumber);
+                }
+                else {
+                    break;
+                }
+            }
+            return buildResult;
+        });
+    }
+    sleepFor(sleepDurationInSeconds) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                setTimeout(resolve, sleepDurationInSeconds * 1000);
+            });
+        });
+    }
+    startBuild(buildtargetid, localcommit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const startBuildEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds`;
+            const startResponse = yield this.apiPost(startBuildEndpoint, { commit: localcommit ? github_1.default.context.sha : undefined });
+            return startResponse.data[0];
+        });
+    }
+    getBuildInfo(buildtargetid, buildnumber) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const buildInfoEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}`;
+            const buildStatusResponse = yield this.apiGet(buildInfoEndpoint);
+            return buildStatusResponse.data;
+        });
+    }
+    apiGet(endpoint) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield axios_1.default.get(this.apiUrl + endpoint, this.requestOptions);
+        });
+    }
+    apiPost(endpoint, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield axios_1.default.post(this.apiUrl + endpoint, body, this.requestOptions);
+        });
+    }
+}
+exports.default = BuildApi;
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -35,10 +124,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const github = __importStar(__nccwpck_require__(5438));
-const axios = __importStar(__nccwpck_require__(6545));
+const buildApi_1 = __importDefault(__nccwpck_require__(138));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -47,42 +138,15 @@ function run() {
             const buildtargetid = core.getInput('buildtargetid');
             const apiKey = core.getInput('apikey');
             const useactioncommit = core.getInput('useactioncommit');
-            const apiUrl = 'https://build-api.cloud.unity3d.com/api/v1';
-            const startBuildEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`;
-            core.info(`Using ${apiUrl + startBuildEndpoint}`);
-            const startBuildData = {};
-            const requestOptions = {
-                headers: {
-                    'Authorization': `Basic ${apiKey}`
-                }
-            };
-            if (useactioncommit) {
-                startBuildData.commit = github.context.sha;
-            }
-            core.info('start');
-            core.info(new Date().toTimeString());
-            const response = yield axios.default.post(apiUrl + startBuildEndpoint, startBuildData, requestOptions);
-            core.info(JSON.stringify(response.data));
-            const buildResult = response.data[0];
-            let buildStatus = buildResult.buildStatus;
-            const buildNumber = buildResult.build;
-            const buildInfoEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds/${buildNumber}`;
-            while (true) {
-                if (buildStatus === 'queued' || buildStatus === 'sentToBuilder' || buildStatus === 'started' || buildStatus === 'restarted') {
-                    var sleepDuration = 15;
-                    yield sleepFor(sleepDuration);
-                    const buildStatusResponse = yield axios.default.get(apiUrl + buildInfoEndpoint, requestOptions);
-                    buildStatus = buildStatusResponse.data.buildStatus;
-                }
-                else {
-                    break;
-                }
-            }
-            core.debug(`Build finished in ${buildResult.buildTimeInSeconds} seconds.`);
+            const api = new buildApi_1.default(apiKey, orgid, projectid);
+            const buildResult = yield api.runBuild(buildtargetid);
+            core.debug(`Build finished`);
             if (buildResult.buildStatus !== 'success') {
-                core.setFailed(`Build failed with status ${buildResult.buildStatus}. Message: ${buildResult.failureDetails}`);
+                core.setFailed(`Build failed with status ${buildResult.buildStatus}. Info: ${JSON.stringify(buildResult)}`);
             }
-            core.setOutput('time', new Date().toTimeString());
+            else {
+                core.info(`Build succeeded in ${buildResult.totalTimeInSeconds} seconds.`);
+            }
         }
         catch (error) {
             if (error.response) {
@@ -95,13 +159,6 @@ function run() {
                 core.setFailed(error.message);
             }
         }
-    });
-}
-function sleepFor(sleepDurationInSeconds) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            setTimeout(resolve, sleepDurationInSeconds * 1000);
-        });
     });
 }
 run();
