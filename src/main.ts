@@ -18,6 +18,13 @@ async function run(): Promise<void> {
     const buildResult = await api.runBuild(buildtargetid)
 
     core.info(`Build finished!`)
+    core.setOutput('BuildResult', buildResult)
+
+    core.info('Getting share link')
+    const shareResult = await api.createShareLink(buildtargetid, buildResult.build)
+
+    core.info(`Share link: ${shareResult.shareid}`)
+    core.setOutput('share-link', shareResult.shareid)
     
     if (buildResult.buildStatus !== 'success') {
       core.setFailed(

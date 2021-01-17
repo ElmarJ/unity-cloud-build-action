@@ -48,6 +48,18 @@ export default class BuildApi {
         return buildStatusResponse.data      
     }
 
+    async createShareLink(buildtargetid: string, buildnumber: string) {
+      const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
+      const shareResponse = await this.apiPost(shareEndpoint, {})
+      return shareResponse.data      
+    }
+
+    async getShareLink(buildtargetid: string, buildnumber: string) {
+      const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
+      const shareResponse = await this.apiGet(shareEndpoint)
+      return shareResponse.data      
+    }
+
     async apiGet(endpoint: string) {
         return await axios.get(this.apiUrl + endpoint, this.requestOptions)
     }
