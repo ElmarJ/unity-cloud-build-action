@@ -23,6 +23,6 @@ jobs:
         with:
           orgid: 9070997178214
           projectid: 92d51031-4fe2-4e34-8c02-d41460f587fa
-          targetid: default_linux
+          buildtargetid: default_linux
           apikey: ${{ secrets.UNITY_API_KEY }}
 
