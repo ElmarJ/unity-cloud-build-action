@@ -1,11 +1,10 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "unity-cloud-build-action",
+  "version": "1.2.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "Github Action to build on Unity Cloud Build",
   "main": "lib/main.js",
   "scripts": {
-    "api-generate": "openapi-generator-cli generate -g javascript -i https://build-api.cloud.unity3d.com/api/v1/api.json -o src/api_library --additional-properties=ensureUniqueParams=true&npmName=unity-cloud-build-ts-api",
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
@@ -16,20 +15,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/ElmarJ/unity-cloud-build-action.git"
   },
   "keywords": [
     "actions",
     "node",
     "setup"
   ],
-  "author": "",
+  "author": "Elmar Jansen",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
     "axios": "^0.21.1",
-    "request": "^2.88.2"
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",
