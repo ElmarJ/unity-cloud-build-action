@@ -50,4 +50,39 @@ async function run(): Promise<void> {
   }
 }
 
-run()
+
+async function run2(): Promise<void> {
+  try {
+    const orgid: string = core.getInput('orgid')
+    const projectid: string = core.getInput('projectid')
+    const buildtargetid: string = core.getInput('buildtargetid')
+    const apiKey = core.getInput('apiKey')
+    const apiUrl = 'https://build-api.cloud.unity3d.com/api/v1'
+
+    const startBuildEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`
+    core.info(`Using ${apiUrl + startBuildEndpoint}`)
+    const startBuildData = {
+      clean: false,
+      delay: 0,
+      commit: github.context.sha,
+      headless: false,
+      label: '',
+      platform: 'linux'
+    }
+    const requestOptions = {
+      headers: {
+        Authentication: `Basic ${apiKey}`
+      }
+    }
+    core.warning('dit is een waarschuwing')
+    core.info('start')
+    core.info(new Date().toTimeString())
+
+    core.setOutput('time', new Date().toTimeString())
+  } catch (error) {
+    core.setFailed(error.message)
+  }
+}
+
+
+run2()
