@@ -11,6 +11,7 @@ async function run(): Promise<void> {
     const apiUrl = 'https://build-api.cloud.unity3d.com/api/v1'
 
     const startBuildEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`
+    core.info(`Using ${apiUrl + startBuildEndpoint}`)
     const startBuildData = {
       clean: false,
       delay: 0,
@@ -25,8 +26,8 @@ async function run(): Promise<void> {
       }
     }
 
-    core.debug('start')
-    core.debug(new Date().toTimeString())
+    core.info('start')
+    core.info(new Date().toTimeString())
 
     const response = await axios.default.post(
       apiUrl + startBuildEndpoint,
