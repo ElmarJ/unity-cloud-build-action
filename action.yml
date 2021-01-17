@@ -11,6 +11,9 @@ inputs:
   targetid: # change this
     required: true
     description: 'Build Target ID'
+  apikey:
+    required: true
+    description: 'Unity Cloud Build API key'
 runs:
   using: 'node12'
   main: 'dist/index.js'
