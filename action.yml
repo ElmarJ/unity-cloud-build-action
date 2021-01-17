@@ -8,7 +8,7 @@ inputs:
   projectid: # change this
     required: true
     description: 'Project ID'
-  projectid: # change this
+  targetid: # change this
     required: true
     description: 'Build Target ID'
 runs:
