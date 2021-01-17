@@ -71,8 +71,8 @@ function run() {
                 if (buildStatus === 'queued' || buildStatus === 'sentToBuilder' || buildStatus === 'started' || buildStatus === 'restarted') {
                     var sleepDuration = 15;
                     yield sleepFor(sleepDuration);
-                    const buildStatusResponse = yield axios.default.post(apiUrl + buildInfoEndpoint, {}, requestOptions);
-                    let buildStatus = buildStatusResponse.data.buildStatus;
+                    const buildStatusResponse = yield axios.default.get(apiUrl + buildInfoEndpoint, requestOptions);
+                    buildStatus = buildStatusResponse.data.buildStatus;
                 }
                 else {
                     break;

@@ -46,8 +46,8 @@ async function run(): Promise<void> {
       var sleepDuration = 15;
       await sleepFor(sleepDuration);
 
-      const buildStatusResponse = await axios.default.post(apiUrl + buildInfoEndpoint,{}, requestOptions)
-      let buildStatus = buildStatusResponse.data.buildStatus
+      const buildStatusResponse = await axios.default.get(apiUrl + buildInfoEndpoint, requestOptions)
+      buildStatus = buildStatusResponse.data.buildStatus
     } else {
       break;
     } 
