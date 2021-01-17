@@ -59,7 +59,7 @@ function run() {
             };
             const requestOptions = {
                 headers: {
-                    Authentication: `Basic ${apiKey}`
+                    'Authorization': `Basic ${apiKey}`
                 }
             };
             core.info('start');

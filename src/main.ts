@@ -22,7 +22,7 @@ async function run(): Promise<void> {
     }
     const requestOptions = {
       headers: {
-        Authentication: `Basic ${apiKey}`
+        'Authorization': `Basic ${apiKey}`
       }
     }
 
