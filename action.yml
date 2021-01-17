@@ -1,11 +1,16 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Unity Cloud Build Action'
+description: 'Allows to start a build on Unity Cloud Build, and await its result'
+author: 'Elmar Jansen'
 inputs:
-  milliseconds: # change this
+  orgid: 
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Organisation ID'
+  projectid: # change this
+    required: true
+    description: 'Project ID'
+  projectid: # change this
+    required: true
+    description: 'Build Target ID'
 runs:
   using: 'node12'
   main: 'dist/index.js'

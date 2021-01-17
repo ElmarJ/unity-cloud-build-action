@@ -1,14 +1,32 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as unity from './api_library/api'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    const orgid: string = core.getInput('orgid')
+    const projectid: string = core.getInput('projectid')
+    const buildtargetid: string = core.getInput('buildtargetid')
+    const unityBuilds = new unity.BuildsApi()
 
+    core.debug('start')
     core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+
+    var response = await unityBuilds.startBuilds(
+      orgid,
+      projectid,
+      buildtargetid
+    )
+    var buildResult = response.body[0]
+
+    core.debug(`Build finished in ${buildResult.buildTimeInSeconds} seconds.`)
+    if (
+      buildResult.buildStatus !=
+      unity.OrgsOrgidProjectsProjectidBuildtargetsBuilds.BuildStatusEnum.Success
+    ) {
+      core.setFailed(
+        `Build failed with status ${buildResult.buildStatus}. Message: ${buildResult.failureDetails}`
+      )
+    }
 
     core.setOutput('time', new Date().toTimeString())
   } catch (error) {
