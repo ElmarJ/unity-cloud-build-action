@@ -25,11 +25,13 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.6"
+    "@actions/core": "^1.2.6",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.9",
+    "@types/request": "^2.48.5",
     "@typescript-eslint/parser": "^4.8.1",
     "@vercel/ncc": "^0.27.0",
     "eslint": "^7.17.0",
