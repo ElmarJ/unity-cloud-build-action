@@ -36,6 +36,22 @@ async function run(): Promise<void> {
     core.info(JSON.stringify(response.data));
     
     const buildResult = response.data[0]
+    let buildStatus = buildResult.buildStatus
+    const buildNumber = buildResult.build
+    const buildInfoEndpoint = `/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds/${buildNumber}`
+
+
+    while (true) {
+    if (buildStatus === 'queued' || buildStatus === 'sentToBuilder' || buildStatus === 'started' || buildStatus === 'restarted') {
+      var sleepDuration = 15;
+      await sleepFor(sleepDuration);
+
+      const buildStatusResponse = await axios.default.post(apiUrl + buildInfoEndpoint,{}, requestOptions)
+      let buildStatus = buildStatusResponse.data.buildStatus
+    } else {
+      break;
+    } 
+  }
 
     core.debug(`Build finished in ${buildResult.buildTimeInSeconds} seconds.`)
     if (buildResult.buildStatus !== 'success') {
@@ -56,6 +72,11 @@ async function run(): Promise<void> {
       core.setFailed(error.message)
     }
   }
+}
+async function sleepFor(sleepDurationInSeconds: any): Promise<any> {
+  return new Promise((resolve, reject) => {
+      setTimeout(resolve, sleepDurationInSeconds * 1000);
+  });
 }
 
 run()
