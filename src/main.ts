@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import * as github from '@actions/github'
+//import * as github from '@actions/github'
 import * as axios from 'axios'
 
 async function run(): Promise<void> {
@@ -15,7 +15,7 @@ async function run(): Promise<void> {
     const startBuildData = {
       clean: false,
       delay: 0,
-      commit: github.context.sha,
+      //      commit: github.context.sha,
       headless: false,
       label: '',
       platform: 'linux'
@@ -46,7 +46,15 @@ async function run(): Promise<void> {
 
     core.setOutput('time', new Date().toTimeString())
   } catch (error) {
-    core.setFailed(error.message)
+    if(error.response) {
+      core.setFailed(`Error HTTP response. Data: ${error.response.data}. Status: ${error.response.status}`)
+    }
+    else if(error.request) {
+      core.setFailed(`Error HTTP response. Data: ${error.request}. Status: ${error.response.status}`)
+    }
+    else {
+      core.setFailed(error.message)
+    }
   }
 }
 
