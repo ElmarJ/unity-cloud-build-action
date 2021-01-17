@@ -8,7 +8,7 @@ inputs:
   projectid: # change this
     required: true
     description: 'Project ID'
-  targetid: # change this
+  buildtargetid: # change this
     required: true
     description: 'Build Target ID'
   apikey:

@@ -73,7 +73,15 @@ function run() {
             core.setOutput('time', new Date().toTimeString());
         }
         catch (error) {
-            core.setFailed(error.message);
+            if (error.response) {
+                core.setFailed(`Error HTTP response. Data: ${error.response.data}. Status: ${error.response.status}`);
+            }
+            else if (error.request) {
+                core.setFailed(`Error HTTP response. Data: ${error.request}. Status: ${error.response.status}`);
+            }
+            else {
+                core.setFailed(error.message);
+            }
         }
     });
 }

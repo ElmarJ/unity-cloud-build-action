@@ -46,13 +46,15 @@ async function run(): Promise<void> {
 
     core.setOutput('time', new Date().toTimeString())
   } catch (error) {
-    if(error.response) {
-      core.setFailed(`Error HTTP response. Data: ${error.response.data}. Status: ${error.response.status}`)
-    }
-    else if(error.request) {
-      core.setFailed(`Error HTTP response. Data: ${error.request}. Status: ${error.response.status}`)
-    }
-    else {
+    if (error.response) {
+      core.setFailed(
+        `Error HTTP response. Data: ${error.response.data}. Status: ${error.response.status}`
+      )
+    } else if (error.request) {
+      core.setFailed(
+        `Error HTTP response. Data: ${error.request}. Status: ${error.response.status}`
+      )
+    } else {
       core.setFailed(error.message)
     }
   }
