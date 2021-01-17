@@ -139,8 +139,9 @@ function run() {
             const apiKey = core.getInput('apikey');
             const useactioncommit = core.getInput('useactioncommit');
             const api = new buildApi_1.default(apiKey, orgid, projectid);
+            core.info(`Starting cloud build now...`);
             const buildResult = yield api.runBuild(buildtargetid);
-            core.debug(`Build finished`);
+            core.info(`Build finished!`);
             if (buildResult.buildStatus !== 'success') {
                 core.setFailed(`Build failed with status ${buildResult.buildStatus}. Info: ${JSON.stringify(buildResult)}`);
             }
