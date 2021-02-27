@@ -1,74 +1,108 @@
-import axios from "axios"
-import github from "@actions/github"
+import axios, {AxiosResponse} from 'axios'
+import github from '@actions/github'
+import BuildResult from './api/buildResult'
 
 export default class BuildApi {
-    constructor(private apiKey: string, private orgid: string, private projectid: string) {}
-    readonly apiUrl = 'https://build-api.cloud.unity3d.com/api/v1'    
-    readonly requestOptions = {
-        headers: {
-          'Authorization': `Basic ${this.apiKey}`
-        }
+  requestOptions: {headers: {Authorization: string}}
+  constructor(
+    private apiKey: string,
+    private orgid: string,
+    private projectid: string
+  ) {
+    this.requestOptions = {
+      headers: {
+        Authorization: `Basic ${this.apiKey}`
       }
+    }
+  }
+  readonly apiUrl = 'https://build-api.cloud.unity3d.com/api/v1'
 
-    async runBuild(buildtargetid: string, localcommit: boolean = false) {
-        // Start build and register build number:
-        let buildResult = await this.startBuild(buildtargetid, localcommit)
-        const buildNumber = buildResult.build
+  async runBuild(
+    buildtargetid: string,
+    localcommit = false
+  ): Promise<BuildResult> {
+    // Start build and register build number:
+    let buildResult = await this.startBuild(buildtargetid, localcommit)
+    const buildNumber = buildResult.build
 
-        // Keep checking build status every 15 seconds until done or failed
-        while (true) {
-            let buildStatus = buildResult.buildStatus
-            if (buildStatus === 'queued' || buildStatus === 'sentToBuilder' || buildStatus === 'started' || buildStatus === 'restarted') {
-              var sleepDuration = 15;
-              await this.sleepFor(sleepDuration);
-              buildResult = await this.getBuildInfo(buildtargetid, buildNumber)
-            } else {
-              break;
-            } 
-          }
-
-          return buildResult;
+    // Keep checking build status every 15 seconds until done or failed
+    for (;;) {
+      const buildStatus = buildResult.buildStatus
+      if (
+        buildStatus === 'queued' ||
+        buildStatus === 'sentToBuilder' ||
+        buildStatus === 'started' ||
+        buildStatus === 'restarted'
+      ) {
+        const sleepDuration = 15
+        await this.sleepFor(sleepDuration)
+        buildResult = await this.getBuildInfo(buildtargetid, buildNumber)
+      } else {
+        break
+      }
     }
 
-    async sleepFor(sleepDurationInSeconds: any): Promise<any> {
-        return new Promise((resolve, reject) => {
-            setTimeout(resolve, sleepDurationInSeconds * 1000);
-        });
-    }
+    return buildResult
+  }
 
-    async startBuild(buildtargetid: string, localcommit: boolean) {
-        const startBuildEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds`
-        const startResponse = await this.apiPost(startBuildEndpoint, { commit: localcommit ? github.context.sha : undefined})
-        return startResponse.data[0]
-    }
-    
-    async getBuildInfo(buildtargetid: string, buildnumber: string) {
-        const buildInfoEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}`
-        const buildStatusResponse = await this.apiGet(buildInfoEndpoint)
-        return buildStatusResponse.data      
-    }
+  async sleepFor(sleepDurationInSeconds: number): Promise<void> {
+    return new Promise(resolve => {
+      setTimeout(resolve, sleepDurationInSeconds * 1000)
+    })
+  }
 
-    async createShareLink(buildtargetid: string, buildnumber: string) {
-      const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
-      const shareResponse = await this.apiPost(shareEndpoint, {})
-      return shareResponse.data      
-    }
+  async startBuild(
+    buildtargetid: string,
+    localcommit: boolean
+  ): Promise<BuildResult> {
+    const startBuildEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds`
+    const startResponse = await this.apiPost<BuildResult[]>(
+      startBuildEndpoint,
+      {
+        commit: localcommit ? github.context.sha : undefined
+      }
+    )
+    return startResponse.data[0]
+  }
 
-    async getShareLink(buildtargetid: string, buildnumber: string) {
-      const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
-      const shareResponse = await this.apiGet(shareEndpoint)
-      return shareResponse.data      
-    }
+  async getBuildInfo(
+    buildtargetid: string,
+    buildnumber: string
+  ): Promise<BuildResult> {
+    const buildInfoEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}`
+    const buildStatusResponse = await this.apiGet<BuildResult>(
+      buildInfoEndpoint
+    )
+    return buildStatusResponse.data
+  }
 
-    async apiGet(endpoint: string) {
-        return await axios.get(this.apiUrl + endpoint, this.requestOptions)
-    }
+  async createShareLink(
+    buildtargetid: string,
+    buildnumber: string
+  ): Promise<BuildResult> {
+    const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
+    const shareResponse = await this.apiPost<BuildResult>(shareEndpoint, {})
+    return shareResponse.data
+  }
 
-    async apiPost(endpoint: string, body: object) {
-        return await axios.post(
-            this.apiUrl + endpoint,
-            body,
-            this.requestOptions
-          )
-    }
+  async getShareLink(
+    buildtargetid: string,
+    buildnumber: string
+  ): Promise<BuildResult> {
+    const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
+    const shareResponse = await this.apiGet<BuildResult>(shareEndpoint)
+    return shareResponse.data
+  }
+
+  async apiGet<T>(endpoint: string): Promise<AxiosResponse<T>> {
+    return await axios.get<T>(this.apiUrl + endpoint, this.requestOptions)
+  }
+
+  async apiPost<T>(endpoint: string, body: object): Promise<AxiosResponse<T>> {
+    return await axios.post<T>(
+      this.apiUrl + endpoint,
+      body,
+      this.requestOptions
+    )
+  }
 }
