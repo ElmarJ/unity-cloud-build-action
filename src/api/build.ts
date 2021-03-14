@@ -1,4 +1,4 @@
-export default class BuildResult {
+export default class Build {
   build!: number
   buildtargetid!: string
   buildTargetName!: string

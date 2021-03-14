@@ -1,7 +1,10 @@
 import axios, {AxiosResponse} from 'axios'
 import github from '@actions/github'
-import BuildResult from './api/buildResult'
 import ShareLink from './api/shareLink'
+import Build from './api/build'
+import { GitHub } from '@actions/github/lib/utils'
+import { countReset } from 'node:console'
+import * as core from '@actions/core'
 
 export default class BuildApi {
   requestOptions: {headers: {Authorization: string}}
@@ -18,10 +21,7 @@ export default class BuildApi {
   }
   readonly apiUrl = 'https://build-api.cloud.unity3d.com/api/v1'
 
-  async runBuild(
-    buildtargetid: string,
-    localcommit = false
-  ): Promise<BuildResult> {
+  async runBuild(buildtargetid: string, localcommit = false): Promise<Build> {
     // Start build and register build number:
     let buildResult = await this.startBuild(buildtargetid, localcommit)
     const buildNumber = buildResult.build
@@ -55,25 +55,20 @@ export default class BuildApi {
   async startBuild(
     buildtargetid: string,
     localcommit: boolean
-  ): Promise<BuildResult> {
+  ): Promise<Build> {
     const startBuildEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds`
-    const startResponse = await this.apiPost<BuildResult[]>(
-      startBuildEndpoint,
-      {
-        commit: localcommit ? github.context.sha : undefined
-      }
-    )
+    const startResponse = await this.apiPost<Build[]>(startBuildEndpoint, {
+      commit: localcommit ? github.context.sha : undefined
+    })
     return startResponse.data[0]
   }
 
   async getBuildInfo(
     buildtargetid: string,
     buildnumber: number
-  ): Promise<BuildResult> {
+  ): Promise<Build> {
     const buildInfoEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}`
-    const buildStatusResponse = await this.apiGet<BuildResult>(
-      buildInfoEndpoint
-    )
+    const buildStatusResponse = await this.apiGet<Build>(buildInfoEndpoint)
     return buildStatusResponse.data
   }
 
@@ -86,13 +81,32 @@ export default class BuildApi {
     return shareResponse.data
   }
 
-  async getShareLink(
+  async getShareLinkId(
     buildtargetid: string,
-    buildnumber: string
+    buildnumber: number
   ): Promise<ShareLink> {
     const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
     const shareResponse = await this.apiGet<ShareLink>(shareEndpoint)
     return shareResponse.data
+  }
+
+  async getShareInfo(shareid: string): Promise<Build> {
+    const shareEndpoint = `/shares/${shareid}`
+    const shareResponse = await this.apiGet<Build>(shareEndpoint)
+    return shareResponse.data
+  }
+
+  async getShareInfoFromBuildId(
+    buildtargetid: string,
+    buildnumber: number
+  ): Promise<string> {
+    const shareLinkIdData = await this.getShareLinkId(
+      buildtargetid,
+      buildnumber
+    )
+    const shareLinkData = await this.getShareInfo(shareLinkIdData.shareid)
+    core.info(`Info: ${JSON.stringify(shareLinkData)}`)
+    return shareLinkData['download']['href']
   }
 
   async apiGet<T>(endpoint: string): Promise<AxiosResponse<T>> {
