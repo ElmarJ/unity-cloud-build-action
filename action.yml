@@ -1,6 +1,9 @@
 name: 'Unity Cloud Build Action'
 description: 'Allows to start a build on Unity Cloud Build, and await its result'
 author: 'Elmar Jansen'
+branding:
+  icon: 'cloud-snow'
+  color: 'black'
 inputs:
   orgid: 
     required: true
