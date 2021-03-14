@@ -1,6 +1,7 @@
 import axios, {AxiosResponse} from 'axios'
 import github from '@actions/github'
 import BuildResult from './api/buildResult'
+import ShareLink from './api/shareLink'
 
 export default class BuildApi {
   requestOptions: {headers: {Authorization: string}}
@@ -67,7 +68,7 @@ export default class BuildApi {
 
   async getBuildInfo(
     buildtargetid: string,
-    buildnumber: string
+    buildnumber: number
   ): Promise<BuildResult> {
     const buildInfoEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}`
     const buildStatusResponse = await this.apiGet<BuildResult>(
@@ -78,19 +79,19 @@ export default class BuildApi {
 
   async createShareLink(
     buildtargetid: string,
-    buildnumber: string
-  ): Promise<BuildResult> {
+    buildnumber: number
+  ): Promise<ShareLink> {
     const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
-    const shareResponse = await this.apiPost<BuildResult>(shareEndpoint, {})
+    const shareResponse = await this.apiPost<ShareLink>(shareEndpoint, {})
     return shareResponse.data
   }
 
   async getShareLink(
     buildtargetid: string,
     buildnumber: string
-  ): Promise<BuildResult> {
+  ): Promise<ShareLink> {
     const shareEndpoint = `/orgs/${this.orgid}/projects/${this.projectid}/buildtargets/${buildtargetid}/builds/${buildnumber}/share`
-    const shareResponse = await this.apiGet<BuildResult>(shareEndpoint)
+    const shareResponse = await this.apiGet<ShareLink>(shareEndpoint)
     return shareResponse.data
   }
 
