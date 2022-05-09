@@ -1,3 +1,6 @@
+/* eslint-disable filenames/match-regex */
+import {Download} from './Download'
+
 export default class Build {
   build!: number
   buildtargetid!: string
@@ -35,6 +38,7 @@ export default class Build {
     | 'standalonelinux64'
     | 'standalonelinuxuniversal'
     | 'cloudrendering'
+  download!: Download
   workspaceSize!: number
   created!: string
   finished!: string

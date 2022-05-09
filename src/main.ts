@@ -1,5 +1,7 @@
+/* eslint-disable i18n-text/no-en */
 import * as core from '@actions/core'
-import BuildApi from './buildApi'
+import {AxiosError} from 'axios'
+import BuildApi from './BuildApi'
 
 async function run(): Promise<void> {
   try {
@@ -37,13 +39,13 @@ async function run(): Promise<void> {
       core.info(`Build succeeded in ${buildResult.totalTimeInSeconds} seconds.`)
     }
   } catch (error) {
-    if (error.response) {
+    if (error instanceof AxiosError && error && error.response) {
       core.setFailed(
         `Error HTTP response. Error: ${error.response.data.error}. Status: ${error.response.status}`
       )
-    } else if (error.request) {
+    } else if (error instanceof AxiosError && error && error.request) {
       core.setFailed(`Error HTTP request: ${error.request}.`)
-    } else {
+    } else if (error instanceof Error) {
       core.setFailed(error.message)
     }
   }

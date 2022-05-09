@@ -1,9 +1,8 @@
+/* eslint-disable filenames/match-regex */
 import axios, {AxiosResponse} from 'axios'
 import github from '@actions/github'
-import ShareLink from './api/shareLink'
-import Build from './api/build'
-import { GitHub } from '@actions/github/lib/utils'
-import { countReset } from 'node:console'
+import ShareLink from './api/ShareLink'
+import Build from './api/Build'
 import * as core from '@actions/core'
 
 export default class BuildApi {
